@@ -31,7 +31,23 @@ def main(jsonObj, answers):
         # Handle request error
         print("Failed to fetch data:", response.status_code, response.text)
 
-    pyimp.main(data, answers)
+    # answers = answers.json()
+
+    # Specify the file path where you want to write the JSON data
+    file_path = "output.json"
+
+    # Open the file in write mode and use json.dump() to write the JSON object to the file
+    with open(file_path, "w") as json_file:
+        json.dump(data, json_file)
+
+    # Specify the file path where you want to write the JSON data
+    file_path2 = "output2.json"
+
+    # Open the file in write mode and use json.dump() to write the JSON object to the file
+    with open(file_path2, "w") as json_file2:
+        json.dump(answers, json_file2)
+
+    pyimp.main("output.json", "output2.json")
     
 
 

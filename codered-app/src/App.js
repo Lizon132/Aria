@@ -49,7 +49,39 @@ function App() {
 
   const handleSend = () => { // Allow sending dictated text directly
     const messageText = input.trim();
-    if (messageText && continueToGemini) {
+    if (messageText && !continueToGemini) {
+      const newMessages = [...messages, { text: messageText, sender: 'user' }];
+      setMessages(newMessages);
+      setInput('');
+      
+
+      const userInput = newMessages[newMessages.length-1].text;
+      const asyncResult = window.electron.doThing(userInput)
+      .then((response) => {
+        if(response) {
+          // Use a regular expression to match everything between ``` quotes
+          //const fileJSON = JSON.parse(makeJSON(response));
+          // const runPython = (json, answers) => {
+          //   window.electron.doPython(json, answers)
+          // }
+          
+        
+          // runPython(fileJSON, JSONanswers);
+          const stringResponse = response.replace(/```[^`]+```/g, '');
+          // This function will be executed when the promise is fulfilled
+        setMessages([...newMessages, { text: stringResponse, sender: 'bot' }]); // Assuming response contains the data you need to pass to setMessages
+        }
+        else {
+          // Handle the case where 'parts' property is undefined
+          console.error("Error: 'parts' property is undefined");
+        }
+      })
+      .catch((error) => {
+        // This function will be executed if there's an error in the promise chain
+        console.error('Error:', error);
+      });
+    }
+    else if (messageText && continueToGemini) {
       const newMessages = [...messages, { text: messageText, sender: 'user' }];
       setMessages(newMessages);
       setInput('');

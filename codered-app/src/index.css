@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+.user {
+  text-align: right;
+}
+
 /* .App-header {
   background-color: #282c34;
   padding: 20px;
