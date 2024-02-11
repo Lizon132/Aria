@@ -42,14 +42,17 @@ contextBridge.exposeInMainWorld('electron',
     return text;
   }
   },  
-  doPython: () => {
-    // const jsonObject = json;
-    // // Convert the JSON object to a string
-    // const jsonString = JSON.stringify(jsonObject);
-    
-    PythonShell.run('my_script.py', null).then(messages=>{
-      console.log('finished running python -- '+messages);
-    });
+  doPython: (jsonObject) => {
+    // Convert the JSON object to a string
+    const jsonString = JSON.stringify(jsonObject);
+
+    PythonShell.run('my_script.py', { args: [jsonString] })
+        .then(messages => {
+            console.log('finished running python -- ' + messages);
+        })
+        .catch(err => {
+            console.error('Error while running python:', err);
+        });
   },
 });
 

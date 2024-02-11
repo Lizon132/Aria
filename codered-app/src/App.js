@@ -50,7 +50,7 @@ function App() {
       const userInput = newMessages[newMessages.length-1].text;
       const asyncResult = window.electron.doThing(`Please summarize the users travel request in ${newMessages[newMessages.length-1].text} with the response: ${userInput}. Write like you are addressing the client, so please make the statement in a natural language form of a native english speaker. Write it in full sentences like someone dictated the information. Conclude the summary portion with the statement: "I'll get back to you with the best options that meet your budget and preferences."
       
-      If possible please restate the facts to confirm that you are understanding the question. Finally and most importantly please generate a JSON text that follows this form for Amadeaus API: Please only include the raw JSON format and ENSURE THAT ALL JSON FOLLOWS THE LATEST JSON STANDARD - enclosed by \`\`\`
+      If possible please restate the facts to confirm that you are understanding the question. Finally and most importantly please generate a JSON text that follows this form for Amadeaus API: Please only include the raw JSON format and ALWAYS ENSURE THAT THE ',' AND '}' ARE FOLLOWING THE JSON STANDARDS - keep the codeblock enclosed by \`\`\`. **the time format must be in the HH:MM:SS
       {
         "currencyCode": "USD",
         "originDestinations": [
@@ -60,7 +60,7 @@ function App() {
             "destinationLocationCode": "MAD",
             "departureDateTimeRange": {
               "date": "2023-11-01",
-              "time": "10:00:00" // this must be in the HH:MM:SS - please remove this comment from the final JSON
+              "time": "10:00:00"
             }
           }
         ],
@@ -92,10 +92,10 @@ function App() {
         if(response) {
           // Use a regular expression to match everything between ``` quotes
           const fileJSON = JSON.parse(makeJSON(response));
-          const runPython = () => {
-            window.electron.doPython()
+          const runPython = (json) => {
+            window.electron.doPython(json)
           }
-          runPython();
+          runPython(fileJSON);
           const stringResponse = response.replace(/```[^`]+```/g, '');
           // This function will be executed when the promise is fulfilled
         setMessages([...newMessages, { text: stringResponse, sender: 'bot' }]); // Assuming response contains the data you need to pass to setMessages
