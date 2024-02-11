@@ -42,11 +42,11 @@ contextBridge.exposeInMainWorld('electron',
     return text;
   }
   },  
-  doPython: (jsonObject) => {
+  doPython: (jsonObject, answers) => {
     // Convert the JSON object to a string
     const jsonString = JSON.stringify(jsonObject);
 
-    PythonShell.run('my_script.py', { args: [jsonString] })
+    PythonShell.run('my_script.py', { args: [jsonString, answers] })
         .then(messages => {
             console.log('finished running python -- ' + messages);
         })

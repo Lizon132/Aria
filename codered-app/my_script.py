@@ -1,13 +1,14 @@
 import sys
 import json
 import requests
+import pyscripts as pyimp
 
-def main(jsonObj):
-    
+def main(jsonObj, answers):
+    json.dumps(answers, indent=4)
     # Load the search parameters from your JSON file
     # with open('your_json_file.json', 'r') as file:
     #     search_parameters = json.load(file)
-    ACCESS_TOKEN = "3dCBfgWOaI3rCDGYJj816s38wEQf"
+    ACCESS_TOKEN = "BY6S3GGmOMRNXpdTBDapgMLR9X8Z"
 
     # The endpoint URL for flight offers search; adjust as necessary for the specific API call
     url = "https://test.api.amadeus.com/v2/shopping/flight-offers"
@@ -30,6 +31,12 @@ def main(jsonObj):
         # Handle request error
         print("Failed to fetch data:", response.status_code, response.text)
 
+    pyimp.main(data, answers)
+    
+
+
+
+
 if __name__ == "__main__":
     # Check if a JSON string argument is provided
     if len(sys.argv) < 2:
@@ -37,12 +44,14 @@ if __name__ == "__main__":
     else:
         # Extract the JSON string from command-line arguments
         json_str = sys.argv[1]
+        json_answers = sys.argv[2]
 
         # Parse the JSON string into a Python dictionary
         try:
             json_data = json.loads(json_str)
+            answers = json.loads(json_answers)
         except json.JSONDecodeError as e:
             print("Error decoding JSON:", e)
         else:
             # Call the main function with the parsed JSON data
-            main(json_data)
+            main(json_data, answers)

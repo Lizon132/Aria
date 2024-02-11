@@ -4,12 +4,24 @@ import VoiceDictation from './VoiceDictation'; // Ensure the path is correct
 import MarkdownView from 'react-showdown';
 
 function App() {
+  const questions = { 0:"What are your preferred date and time for travel? Are you flexible with these times, and if so, to what extent?", 1:"Do you prefer the quickest travel option available, or are you open to longer durations if it offers cost savings?", 2:"How important is price in determining your travel option? What is your budget range?"};
+
+  // const i;
   const [messages, setMessages] = useState([{ text: "<div>Welcome to our travel agency! We are delighted to have you here and eager to assist you in planning your next adventure. Whether you're seeking a relaxing beach getaway, an exciting city exploration, or a cultural immersion in a far-off land, we're here to make your travel dreams a reality. Our team of friendly and experienced travel agents is dedicated to providing you with personalized assistance every step of the way. From finding the perfect flight options to arranging accommodations and activities, we're committed to ensuring your journey is smooth and memorable. Get ready to embark on an unforgettable travel experience, and let us help you create memories that will last a lifetime. We look forward to assisting you!</div><br></br><div>Please provide us with the following details:Personal Information:Full Name:Email Address:Contact Number:Travel Details:Departure City:Destination City:Departure Date (YYYY-MM-DD):Preferred Departure Time:Number of Travelers (Adults, Children, Infants):Traveler Type (e.g., Adult, Child, Infant):Cabin Preference (e.g., Economy, Business, First Class):Additional Preferences:Flexibility in Dates (If any):Maximum Number of Flight Offers to Consider:Any Specific Airlines Preferred or Avoided:Budget and Currency:Preferred Currency:Budget Range (per person):Minimum:Maximum:Contact Preferences:Preferred Mode of Contact (Email, Phone):Preferred Time for Contact:Additional Comments or Special Requests:</div>", sender: 'bot' }]);
   const [question, setCurrentQuestion] = useState(messages[0].text);
   const [input, setInput] = useState('');
+  const [answers, setAnswers] = useState('');
+  const [answers2, setAnswers2] = useState('');
+  const [answers3, setAnswers3] = useState('');
   const [isDictating, setIsDictating] = useState(false); // State to control dictation mode
   const continueToGemini = true;
+  const JSONanswers = {
+    "date_and_time": answers ,
+    "travel_duration": answers2,
+    "price_sensitivity":answers3, 
+  }
 
+  
 // todo: make the JSON extractor function
   const makeJSON = (inputString) => {
     const firstIndex = inputString.indexOf('{');
@@ -31,6 +43,10 @@ function App() {
   }
 
   //complete: the handleSend function that fires when the user response is submitted.
+  const handleInput = (a) => {
+    console.log(a);
+  }
+
   const handleSend = () => { // Allow sending dictated text directly
     const messageText = input.trim();
     if (messageText && continueToGemini) {
@@ -84,10 +100,12 @@ function App() {
         if(response) {
           // Use a regular expression to match everything between ``` quotes
           const fileJSON = JSON.parse(makeJSON(response));
-          const runPython = (json) => {
-            window.electron.doPython(json)
+          const runPython = (json, answers) => {
+            window.electron.doPython(json, answers)
           }
-          runPython(fileJSON);
+          
+        
+          runPython(fileJSON, JSONanswers);
           const stringResponse = response.replace(/```[^`]+```/g, '');
           // This function will be executed when the promise is fulfilled
         setMessages([...newMessages, { text: stringResponse, sender: 'bot' }]); // Assuming response contains the data you need to pass to setMessages
@@ -126,6 +144,54 @@ function App() {
         
       </div>
       <div className="chat-window">
+      
+        <div>
+          <div className={`rounded-lg mb-8 p-8 bg-sky-200/75`}>
+            <MarkdownView
+              markdown={questions[0]}
+              options={{ tables: true, emoji: true }}
+            />
+          </div>
+          <input
+            autoFocus
+            className='flex flex-grow resize-none border rounded-md h-auto min-h-[1rem] max-h-[20rem] text-wrap overflow-hidden mb-8 p-8 pt-8 pb-8 bg-slate-200/75 w-full'
+            type="textarea"
+            value={answers} // Bind value to the answers state variable
+            onChange={(e) => setAnswers(e.target.value) }
+            
+          />
+          </div>
+          <div>
+          <div className={`rounded-lg mb-8 p-8 bg-sky-200/75`}>
+            <MarkdownView
+              markdown={questions[1]}
+              options={{ tables: true, emoji: true }}
+            />
+          </div>
+          <input
+            className='flex flex-grow resize-none border rounded-md h-auto min-h-[1rem] max-h-[20rem] text-wrap overflow-hidden mb-8 p-8 pt-8 pb-8 bg-slate-200/75 w-full'
+            type="textarea"
+            value={answers2} // Bind value to the answers state variable
+            onChange={(e) => setAnswers2(e.target.value) }
+            
+          />
+          </div>
+          <div>
+          <div className={`rounded-lg mb-8 p-8 bg-sky-200/75`}>
+            <MarkdownView
+              markdown={questions[2]}
+              options={{ tables: true, emoji: true }}
+            />
+          </div>
+          <input
+            className='flex flex-grow resize-none border rounded-md h-auto min-h-[1rem] max-h-[20rem] text-wrap overflow-hidden mb-8 p-8 pt-8 pb-8 bg-slate-200/75 w-full'
+            type="textarea"
+            value={answers3} // Bind value to the answers state variable
+            onChange={(e) => setAnswers3(e.target.value) }
+            
+          />
+          </div>
+
         {messages.map((message, index) => (
           <div key={index} className={`rounded-lg mb-8 p-8 bg-sky-200/75 ${message.sender}`}>
             <MarkdownView
@@ -137,7 +203,6 @@ function App() {
       </div>
       <div className="">
         <textarea 
-          autoFocus
           className='flex flex-grow resize-none border rounded-md h-auto min-h-[1rem] max-h-[20rem] text-wrap overflow-hidden mb-8 p-8 pt-8 pb-8 bg-slate-200/75 w-full'
           type="textarea"
           value={input}
