@@ -13,9 +13,12 @@
 }
 
 .message {
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   margin: 5px;
   padding: 10px;
   border-radius: 5px;
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 
 .user {
@@ -52,4 +55,8 @@
 
 .input-area button:hover {
   background-color: #45a049;
+}
+
+p {
+  line-height: 1.4rem;
 }

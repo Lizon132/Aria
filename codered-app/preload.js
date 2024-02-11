@@ -1,11 +1,11 @@
 const { contextBridge, ipcRenderer } = require('electron');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const {PythonShell} =require('python-shell');
 
 contextBridge.exposeInMainWorld('electron', 
 {
   require: require,
   doThing: async (user_prompt) => {
-
     const API_KEY = "AIzaSyAh7Bbtu2fE28zPJrGASczWmW2CRF71-NU";
     const genAI = new GoogleGenerativeAI(API_KEY);
     const arrayResponse = ["\n"];
@@ -41,5 +41,10 @@ contextBridge.exposeInMainWorld('electron',
     return text;
 
   },  
+  doPython: () => {
+    PythonShell.run('my_script.py', null).then(messages=>{
+      console.log('finished running python');
+    });
+  },
 });
 

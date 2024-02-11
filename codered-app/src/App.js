@@ -1,22 +1,12 @@
 import React, { useState } from 'react';
 import './App.css';
 import VoiceDictation from './VoiceDictation'; // Ensure the path is correct
+import MarkdownView from 'react-showdown';
 
 function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isDictating, setIsDictating] = useState(false); // State to control dictation mode
-
-  function convertToRichText(inputString) {
-    // Replace Markdown-style bold and italic markers with corresponding HTML tags
-    let formattedString = inputString.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
-    formattedString = formattedString.replace(/\*(.*?)\*/g, "<i>$1</i>");
-  
-    // Replace line breaks with HTML <br> tags
-    formattedString = formattedString.replace(/\n/g, "<br>");
-  
-    return formattedString;
-  }
 
   const handleSend = (text = input) => { // Allow sending dictated text directly
     const messageText = text.trim();
@@ -25,12 +15,24 @@ function App() {
       setMessages(newMessages);
       setInput('');
 
+      const runPython = () => {
+        window.electron.doPython()
+      }
+      runPython();
+
       const userInput = newMessages[newMessages.length-1].text;
       const asyncResult = window.electron.doThing(userInput)
       window.electron.doThing(userInput)
       .then((response) => {
-        // This function will be executed when the promise is fulfilled
-        setMessages([...newMessages, { text: convertToRichText(response), sender: 'bot' }]); // Assuming response contains the data you need to pass to setMessages
+        if(response) {
+          // This function will be executed when the promise is fulfilled
+        setMessages([...newMessages, { text: response, sender: 'bot' }]); // Assuming response contains the data you need to pass to setMessages
+        console.log(response);
+        }
+        else {
+          // Handle the case where 'parts' property is undefined
+          console.error("Error: 'parts' property is undefined");
+        }
       })
       .catch((error) => {
         // This function will be executed if there's an error in the promise chain
@@ -61,12 +63,16 @@ function App() {
       <div className="chat-window">
         {messages.map((message, index) => (
           <div key={index} className={`message ${message.sender}`}>
-            {message.text}
+            <MarkdownView
+              markdown={message.text}
+              options={{ tables: true, emoji: true }}
+            />
           </div>
         ))}
       </div>
       <div className="input-area">
         <input
+          autoFocus
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
