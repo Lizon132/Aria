@@ -12,7 +12,7 @@ contextBridge.exposeInMainWorld('electron',
     if(user_prompt){
     async function run() {
       // For text-only input, use the gemini-pro model
-      const model = genAI.getGenerativeModel({ model: "gemini-pro"});
+      const model = genAI.getGenerativeModel({ model: "gemini-pro", temperature: 0.3});
     
       const prompt = user_prompt;
     
@@ -43,6 +43,10 @@ contextBridge.exposeInMainWorld('electron',
   }
   },  
   doPython: () => {
+    // const jsonObject = json;
+    // // Convert the JSON object to a string
+    // const jsonString = JSON.stringify(jsonObject);
+    
     PythonShell.run('my_script.py', null).then(messages=>{
       console.log('finished running python -- '+messages);
     });

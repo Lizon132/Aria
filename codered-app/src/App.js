@@ -10,10 +10,29 @@ function App() {
   const [isDictating, setIsDictating] = useState(false); // State to control dictation mode
   const continueToGemini = true;
 
+// todo: make the JSON extractor function
+  const makeJSON = (inputString) => {
+    const firstIndex = inputString.indexOf('{');
+    const lastIndex = inputString.lastIndexOf('}');
+    
+    if (firstIndex === -1 || lastIndex === -1 || firstIndex >= lastIndex) {
+        return { extractedContent: '', remainingString: inputString }; // No curly brackets found or invalid arrangement
+    }
 
+    const extractedContent = inputString.substring(firstIndex + 1, lastIndex);
+    // const remainingString = inputString.substring(0, firstIndex) + inputString.substring(lastIndex + 1);
+    // Define regular expressions to match Markdown-like characters
+    const markdownRegex = /(\n|\r|\t|<br\s*\/?>|\[([^\]]+)\]\([^)]+\))/gi;
 
-  const handleSend = (text = input) => { // Allow sending dictated text directly
-    const messageText = text.trim();
+    // Replace Markdown-like characters with an empty string
+    const cleanedString = extractedContent.replace(markdownRegex, '');
+
+    return "{"+cleanedString+"}";
+  }
+
+  //complete: the handleSend function that fires when the user response is submitted.
+  const handleSend = () => { // Allow sending dictated text directly
+    const messageText = input.trim();
     if (messageText && !continueToGemini) {
       const newMessages = [...messages, { text: messageText, sender: 'user' }];
       setMessages(newMessages);
@@ -26,16 +45,12 @@ function App() {
       const newMessages = [...messages, { text: messageText, sender: 'user' }];
       setMessages(newMessages);
       setInput('');
-
-      const runPython = () => {
-        window.electron.doPython()
-      }
-      runPython();
+      
 
       const userInput = newMessages[newMessages.length-1].text;
       const asyncResult = window.electron.doThing(`Please summarize the users travel request in ${newMessages[newMessages.length-1].text} with the response: ${userInput}. Write like you are addressing the client, so please make the statement in a natural language form of a native english speaker. Write it in full sentences like someone dictated the information. Conclude the summary portion with the statement: "I'll get back to you with the best options that meet your budget and preferences."
       
-      If possible please restate the facts to confirm that you are understanding the question. Finally and most importantly please generate a JSON text that follows this form for Amadeaus API: Please only include the raw JSON format - DO NOT add any special markdown.
+      If possible please restate the facts to confirm that you are understanding the question. Finally and most importantly please generate a JSON text that follows this form for Amadeaus API: Please only include the raw JSON format and ENSURE THAT ALL JSON FOLLOWS THE LATEST JSON STANDARD - enclosed by \`\`\`
       {
         "currencyCode": "USD",
         "originDestinations": [
@@ -75,9 +90,15 @@ function App() {
       }`)
       .then((response) => {
         if(response) {
+          // Use a regular expression to match everything between ``` quotes
+          const fileJSON = JSON.parse(makeJSON(response));
+          const runPython = () => {
+            window.electron.doPython()
+          }
+          runPython();
+          const stringResponse = response.replace(/```[^`]+```/g, '');
           // This function will be executed when the promise is fulfilled
-        setMessages([...newMessages, { text: response, sender: 'bot' }]); // Assuming response contains the data you need to pass to setMessages
-        console.log(response);
+        setMessages([...newMessages, { text: stringResponse, sender: 'bot' }]); // Assuming response contains the data you need to pass to setMessages
         }
         else {
           // Handle the case where 'parts' property is undefined
