@@ -125,6 +125,7 @@ def get_user_preferences():
     responses["stops"] += stops
     # responses["time"] += time
 
+
     return get_scores_each_cate(responses)
 
 # this function will return what category that the user wants to focus on the most
