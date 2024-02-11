@@ -30,6 +30,7 @@ def load_flights_from_json(filename):
 
     flights = []
     for flight_data in data['data']:
+        # all types are str
         flight_id = flight_data['id']
         airline = flight_data['validatingAirlineCodes'][0]  # Assuming only one airline
         departure = flight_data['itineraries'][0]['segments'][0]['departure']['iataCode']
@@ -40,6 +41,7 @@ def load_flights_from_json(filename):
         duration_iso = flight_data['itineraries'][0]['duration']
         segments = flight_data['itineraries'][0]['segments']
         flights.append(Flight(flight_id, airline, departure, destination, departure_time, arrival_time, price, duration_iso, segments))
+
     return flights
 
 def calculate_score(flight, preferences):
@@ -51,18 +53,16 @@ def calculate_score(flight, preferences):
         price_weight = 0.8
         duration_weight = 0.1
         stops_weight = 0.1
+
     elif 'duration' in preferences:
-        price_weight = 0.4
-        duration_weight = 0.4
+        price_weight = 0.1
+        duration_weight = 0.8
         stops_weight = 0.1
+
     elif 'stops' in preferences:
-        price_weight = 0.4
+        price_weight = 0.1
         duration_weight = 0.1
-        stops_weight = 0.4
-    else:
-        price_weight = 0.4
-        duration_weight = 0.3
-        stops_weight = 0.3
+        stops_weight = 0.8
 
     score = (flight.price * price_weight +
              flight.duration_hours * duration_weight +
@@ -79,6 +79,7 @@ def find_top_flights(flights, num_flights, preferences):
 
 def display_flight_info(flights):
     print("Flight Information:")
+    print("---------------------------------")
     idx = 1
     for flight in flights:
         print(f"Flight ID: {flight.flight_id}")
@@ -105,8 +106,40 @@ def get_num_results_from_user():
             print("Please enter a valid integer.")
 
 def get_user_preferences():
-    preferences = input("What are your preferences? (Enter 'price', 'duration', 'stops', 'all' separated by commas): ")
-    return preferences.split(',')
+    # preferences = input("What are your preferences? (Enter 'price', 'duration', 'stops', 'all' separated by commas): ")
+    responses = {
+        "price": "",
+        "duration": "",
+        "stops": "",
+        # "time": ""
+    }
+    price = input("How important is price in determining your travel option? What kind of price range are you"
+                  "wanting to see?: ")
+    duration = input("Do you prefer the quickest travel option available, "
+                     "or are you open to longer durations if it offers cost savings?: ")
+    stops = input("Will you be okay with layovers, that might reduce your cost but increase your overall travel time?: ")
+    # time = input("When booking flights, does the time of your flights matter most to you? "
+    #              "How important is it for you to have your flights in the morning? Or at night?: ")
+    responses["price"] += price
+    responses["duration"] += duration
+    responses["stops"] += stops
+    # responses["time"] += time
+
+    return get_scores_each_cate(responses)
+
+# this function will return what category that the user wants to focus on the most
+# return a string
+def get_scores_each_cate(responses):
+    max_score = 0
+    category = ""
+    for key in responses:
+        score = generate_sentiment_score(responses[key])
+        if score > max_score:
+            category = key
+            max_score = score
+    # print(category)
+    return category
+
 
 def generate_sentiment_score(text):
     analyzer = SentimentIntensityAnalyzer()
