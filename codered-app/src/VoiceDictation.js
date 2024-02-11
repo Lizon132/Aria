@@ -1,57 +1,58 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; // Prefixes for different browsers
 
-const VoiceDictation = ({ onDictationEnd }) => {
-  const [recognition, setRecognition] = useState(null);
+const VoiceDictation = () => {
+  const [isListening, setIsListening] = useState(false);
+  const [text, setText] = useState('');
 
   useEffect(() => {
-    if (typeof SpeechRecognition !== "undefined") {
-      const recognitionInstance = new SpeechRecognition();
-      recognitionInstance.continuous = true; // Keep listening even if the user pauses, until explicitly stopped
-      recognitionInstance.interimResults = true; // Report results that are not yet final
-      recognitionInstance.lang = 'en-US'; // Set the language
+    const recognition = new SpeechRecognition();
+    recognition.interimResults = true; // Update results as you speak
+    recognition.lang = 'en-US'; // Set your preferred language
 
-      recognitionInstance.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map((result) => result[0])
-          .map((result) => result.transcript)
-          .join('');
-        console.log(transcript);
-        if (event.results[0].isFinal) {
-          onDictationEnd(transcript); // Pass final transcript to parent component
-        }
-      };
+    recognition.onstart = () => {
+      console.log('Voice recognition activated. Start speaking.');
+    };
 
-      recognitionInstance.onspeechend = () => {
-        // This event is triggered when the user stops speaking
-        console.log("Speech has stopped.");
-        recognitionInstance.stop(); // Stop the recognition instance
-      };
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map((result) => result[0])
+        .map((result) => result.transcript)
+        .join('');
 
-      recognitionInstance.onend = () => {
-        // This event is triggered when the recognition service is stopped
-        console.log("Speech recognition service disconnected.");
-      };
+      setText(transcript);
+      if (event.results[0].isFinal) {
+        setIsListening(false); // Stop listening when you stop speaking
+        console.log('You stopped talking.');
+      }
+    };
 
-      // Start recognition
-      recognitionInstance.start();
+    recognition.onend = () => {
+      if (isListening) {
+        recognition.start(); // Keep the recognition service running if isListening is true
+      }
+    };
 
-      // Set the recognition instance so it can be stopped when the component unmounts
-      setRecognition(recognitionInstance);
+    if (isListening) {
+      recognition.start();
     } else {
-      console.log("SpeechRecognition is not supported in this browser.");
+      recognition.stop();
     }
 
     return () => {
-      // Cleanup: stop recognition when the component unmounts
-      if (recognition) {
-        recognition.stop();
-      }
+      recognition.stop();
     };
-  }, [onDictationEnd]); // Ensure to include dependencies correctly
+  }, [isListening]);
 
-  return null; // This component does not render anything
+  return (
+    <div>
+      <button onClick={() => setIsListening((prevState) => !prevState)}>
+        {isListening ? 'Stop' : 'Start'} Listening
+      </button>
+      <p>{text}</p>
+    </div>
+  );
 };
 
 export default VoiceDictation;
