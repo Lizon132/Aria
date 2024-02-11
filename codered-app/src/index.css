@@ -1,4 +1,8 @@
-.App-header {
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* .App-header {
   background-color: #282c34;
   padding: 20px;
   color: white;
@@ -59,4 +63,4 @@
 
 p {
   line-height: 1.4rem;
-}
+} */

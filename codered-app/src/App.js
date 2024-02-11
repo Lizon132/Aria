@@ -4,7 +4,7 @@ import VoiceDictation from './VoiceDictation'; // Ensure the path is correct
 import MarkdownView from 'react-showdown';
 
 function App() {
-  const [messages, setMessages] = useState([{ text: "Welcome to our travel agency! We are delighted to have you here and eager to assist you in planning your next adventure. Whether you're seeking a relaxing beach getaway, an exciting city exploration, or a cultural immersion in a far-off land, we're here to make your travel dreams a reality. Our team of friendly and experienced travel agents is dedicated to providing you with personalized assistance every step of the way. From finding the perfect flight options to arranging accommodations and activities, we're committed to ensuring your journey is smooth and memorable. Get ready to embark on an unforgettable travel experience, and let us help you create memories that will last a lifetime. We look forward to assisting you!\n\n Please provide us with the following details:\n\nPersonal Information:\n\n\tFull Name:\n\n\tEmail Address:\n\n\tContact Number:\n\nTravel Details:\n\n\tDeparture City:\n\n\tDestination City:\n\n\tDeparture Date (YYYY-MM-DD):\n\n\tPreferred Departure Time:\n\n\tNumber of Travelers (Adults, Children, Infants):\n\n\tTraveler Type (e.g., Adult, Child, Infant):\n\n\tCabin Preference (e.g., Economy, Business, First Class):\n\nAdditional Preferences:\n\n\tFlexibility in Dates (If any):\n\n\tMaximum Number of Flight Offers to Consider:\n\n\tAny Specific Airlines Preferred or Avoided:\n\nBudget and Currency:\n\n\tPreferred Currency:\n\n\tBudget Range (per person):\n\n\tMinimum:\n\n\tMaximum:\n\nContact Preferences:\n\n\tPreferred Mode of Contact (Email, Phone):\n\n\tPreferred Time for Contact:\n\n\tAdditional Comments or Special Requests:", sender: 'bot' }]);
+  const [messages, setMessages] = useState([{ text: "<div>Welcome to our travel agency! We are delighted to have you here and eager to assist you in planning your next adventure. Whether you're seeking a relaxing beach getaway, an exciting city exploration, or a cultural immersion in a far-off land, we're here to make your travel dreams a reality. Our team of friendly and experienced travel agents is dedicated to providing you with personalized assistance every step of the way. From finding the perfect flight options to arranging accommodations and activities, we're committed to ensuring your journey is smooth and memorable. Get ready to embark on an unforgettable travel experience, and let us help you create memories that will last a lifetime. We look forward to assisting you!</div><br></br><div>Please provide us with the following details:Personal Information:Full Name:Email Address:Contact Number:Travel Details:Departure City:Destination City:Departure Date (YYYY-MM-DD):Preferred Departure Time:Number of Travelers (Adults, Children, Infants):Traveler Type (e.g., Adult, Child, Infant):Cabin Preference (e.g., Economy, Business, First Class):Additional Preferences:Flexibility in Dates (If any):Maximum Number of Flight Offers to Consider:Any Specific Airlines Preferred or Avoided:Budget and Currency:Preferred Currency:Budget Range (per person):Minimum:Maximum:Contact Preferences:Preferred Mode of Contact (Email, Phone):Preferred Time for Contact:Additional Comments or Special Requests:</div>", sender: 'bot' }]);
   const [question, setCurrentQuestion] = useState(messages[0].text);
   const [input, setInput] = useState('');
   const [isDictating, setIsDictating] = useState(false); // State to control dictation mode
@@ -33,15 +33,7 @@ function App() {
   //complete: the handleSend function that fires when the user response is submitted.
   const handleSend = () => { // Allow sending dictated text directly
     const messageText = input.trim();
-    if (messageText && !continueToGemini) {
-      const newMessages = [...messages, { text: messageText, sender: 'user' }];
-      setMessages(newMessages);
-      setInput('');
-      const userInput = newMessages[newMessages.length-1].text;
-      console.log(userInput);
-
-    }
-    else if (messageText && continueToGemini) {
+    if (messageText && continueToGemini) {
       const newMessages = [...messages, { text: messageText, sender: 'user' }];
       setMessages(newMessages);
       setInput('');
@@ -120,13 +112,22 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div className="container mx-auto px-4 font-sans ">
       <header className="App-header">
-        <img src={`${process.env.PUBLIC_URL}/ARIA.png`} alt="Chatbot Logo" />
+      <img className="max-h-36" src={`${process.env.PUBLIC_URL}/ARIA.png`} alt="Chatbot Logo" />
+      <div className="container w-max content-center align-middle justify-center px-auto h-36">
+        <h1 className="flex flex-col pt-8 text-5xl font-bold font-sans text-slate-900">
+            A.R.I.A (AI Routing Information Assistant)
+          </h1>
+      </div>
+
       </header>
+      <div>
+        
+      </div>
       <div className="chat-window">
         {messages.map((message, index) => (
-          <div key={index} className={`message ${message.sender}`}>
+          <div key={index} className={`rounded-lg mb-8 p-8 bg-sky-200/75 ${message.sender}`}>
             <MarkdownView
               markdown={message.text}
               options={{ tables: true, emoji: true }}
@@ -134,16 +135,17 @@ function App() {
           </div>
         ))}
       </div>
-      <div className="input-area">
-        <input
+      <div className="">
+        <textarea 
           autoFocus
-          type="text"
+          className='flex flex-grow resize-none border rounded-md h-auto min-h-[1rem] max-h-[20rem] text-wrap overflow-hidden mb-8 p-8 pt-8 pb-8 bg-slate-200/75 w-full'
+          type="textarea"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && handleSend()}
         />
-        <button onClick={handleSend}>Send</button>
-        <button onClick={() => setIsDictating(true)}>Dictate</button> {/* Button to toggle dictation mode */}
+        <div className="flex align-middle place-content-center justify-center mx-auto"><button className="bg-green-200 hover:bg-green-400 rounded-lg p-3 mr-8" onClick={handleSend}>Send</button>
+        <button className="bg-green-200 hover:bg-green-400 rounded-lg p-3" onClick={() => setIsDictating(true)}>Dictate</button> {/* Button to toggle dictation mode */}</div>
       </div>
       {isDictating && <VoiceDictation onDictationEnd={handleDictationResult} />} {/* Conditionally render VoiceDictation */}
     </div>

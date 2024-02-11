@@ -7,7 +7,7 @@ def main(jsonObj):
     # Load the search parameters from your JSON file
     # with open('your_json_file.json', 'r') as file:
     #     search_parameters = json.load(file)
-    ACCESS_TOKEN = "neGtpgkz5w7gDT85mfZUjoilpUZA"
+    ACCESS_TOKEN = "3dCBfgWOaI3rCDGYJj816s38wEQf"
 
     # The endpoint URL for flight offers search; adjust as necessary for the specific API call
     url = "https://test.api.amadeus.com/v2/shopping/flight-offers"
