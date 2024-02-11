@@ -1,9 +1,12 @@
 import json
 import isodate
 from nltk.sentiment import SentimentIntensityAnalyzer
+import nltk
+nltk.download('vader_lexicon')
 
 class Flight:
-    def __init__(self, flight_id, airline, departure, destination, departure_time, arrival_time, price, duration_iso, segments):
+    def __init__(self, flight_id, airline, departure, destination, departure_time, arrival_time, price, duration_iso,
+                 segments):
         self.flight_id = flight_id
         self.airline = airline
         self.departure = departure
@@ -24,12 +27,14 @@ class Flight:
         minutes = total_minutes % 60
         return f"{hours} hours {minutes} minutes"
 
+
 def load_flights_from_json(filename):
     with open(filename, 'r') as file:
         data = json.load(file)
 
     flights = []
     for flight_data in data['data']:
+        # all types are str
         flight_id = flight_data['id']
         airline = flight_data['validatingAirlineCodes'][0]  # Assuming only one airline
         departure = flight_data['itineraries'][0]['segments'][0]['departure']['iataCode']
@@ -39,46 +44,66 @@ def load_flights_from_json(filename):
         price = float(flight_data['price']['total'])
         duration_iso = flight_data['itineraries'][0]['duration']
         segments = flight_data['itineraries'][0]['segments']
-        flights.append(Flight(flight_id, airline, departure, destination, departure_time, arrival_time, price, duration_iso, segments))
+        flights.append(
+            Flight(flight_id, airline, departure, destination, departure_time, arrival_time, price, duration_iso,
+                   segments))
+
     return flights
 
-def calculate_score(flight, preferences):
+
+def calculate_score(flight, preferences, flight_time_preference):
     price_weight = 0
     duration_weight = 0
     stops_weight = 0
+    time_weight = 0
 
     if 'price' in preferences:
         price_weight = 0.8
         duration_weight = 0.1
         stops_weight = 0.1
     elif 'duration' in preferences:
-        price_weight = 0.4
-        duration_weight = 0.4
+        price_weight = 0.1
+        duration_weight = 0.8
         stops_weight = 0.1
     elif 'stops' in preferences:
-        price_weight = 0.4
+        price_weight = 0.1
         duration_weight = 0.1
-        stops_weight = 0.4
+        stops_weight = 0.8
     else:
         price_weight = 0.4
         duration_weight = 0.3
         stops_weight = 0.3
 
+    if flight_time_preference and flight_time_preference.lower() not in ['all day', '']:
+        if flight_time_preference == 'early':
+            time_weight = 0.8
+        elif flight_time_preference == 'mid-day':
+            time_weight = 0.7
+        elif flight_time_preference == 'night':
+            time_weight = 0.6
+        else:
+            time_weight = 0.0
+
+    total_weight = price_weight + duration_weight + stops_weight + time_weight
+
     score = (flight.price * price_weight +
              flight.duration_hours * duration_weight +
-             flight.stops * stops_weight)
+             flight.stops * stops_weight) / total_weight
     flight.duration_hours_minutes = flight.convert_to_hours_minutes()
     return score
 
-def find_top_flights(flights, num_flights, preferences):
-    sorted_flights = sorted(flights, key=lambda x: calculate_score(x, preferences))
+
+def find_top_flights(flights, num_flights, preferences, flight_time_preference):
+    sorted_flights = sorted(flights, key=lambda x: calculate_score(x, preferences, flight_time_preference))
     if num_flights < len(sorted_flights):
         return sorted_flights[:num_flights]
     else:
         return sorted_flights
 
+
 def display_flight_info(flights):
     print("Flight Information:")
+    print("---------------------------------")
     idx = 1
     for flight in flights:
         print(f"Flight ID: {flight.flight_id}")
@@ -93,6 +118,7 @@ def display_flight_info(flights):
         print("")
         idx += 1
 
+
 def get_num_results_from_user():
     while True:
         try:
@@ -104,14 +130,46 @@ def get_num_results_from_user():
         except ValueError:
             print("Please enter a valid integer.")
 
+
 def get_user_preferences():
-    preferences = input("What are your preferences? (Enter 'price', 'duration', 'stops', 'all' separated by commas): ")
-    return preferences.split(',')
+    # Define your predefined keywords for sentiment analysis
+    keywords = ["price", "duration", "stops"]
+
+    # Initialize responses dictionary
+    responses = {keyword: "" for keyword in keywords}
+
+    # Prompt the user for input based on predefined keywords
+    for keyword in keywords:
+        response = input(f"How important is {keyword} to you in determining your travel option? (very important, important, not important): ")
+        responses[keyword] = response
+
+    # Prompt for flight time preference
+    flight_time_preference = input("Do you have any preference for flight time? (early, mid-day, night, all day): ")
+    responses["flight_time_preference"] = flight_time_preference
+
+    # Use sentiment analysis to determine user preference
+    return responses
+
+
+# this function will return what category that the user wants to focus on the most
+# return a string
+def get_scores_each_cate(responses):
+    max_score = 0
+    category = ""
+    for key in responses:
+        score = generate_sentiment_score(responses[key])
+        if score > max_score:
+            category = key
+            max_score = score
+    # print(category)
+    return category
+
 
 def generate_sentiment_score(text):
     analyzer = SentimentIntensityAnalyzer()
     sentiment_scores = analyzer.polarity_scores(text)
     return sentiment_scores['compound']
+
 
 # Example usage
 if __name__ == "__main__":
@@ -125,6 +183,5 @@ if __name__ == "__main__":
     preferences = get_user_preferences()
 
     # Display top flights based on user's choice
-    top_flights = find_top_flights(flights, num_results, preferences)
-    flights_dict = {flight.flight_id: flight for flight in top_flights}
+    top_flights = find_top_flights(flights, num_results, preferences, preferences["flight_time_preference"])
     display_flight_info(top_flights)
