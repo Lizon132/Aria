@@ -72,6 +72,8 @@ def find_best_flights(flights, weights):
             weights.get("date_and_time", 0) * (1 if "weekend" in preferences["date_and_time"].lower() else 0)  # Example scoring for date_and_time preference
         )
     flights.sort(key=lambda x: x.score, reverse=True)
+    print(weights)
+    print(flights)
     return flights
 
 def save_flight_info_to_json(flights, filename='results.json'):
@@ -100,9 +102,9 @@ def parse_hours(hours):
     return result
 
 def main(a,b):
-    preferences = load_user_preferences('user_preferences.json')
+    preferences = load_user_preferences(b)
     weights = calculate_weights(preferences)
-    flights = load_flights_from_json('flights.json')
+    flights = load_flights_from_json(a)
     best_flights = find_best_flights(flights, weights)
     save_flight_info_to_json(best_flights)
 

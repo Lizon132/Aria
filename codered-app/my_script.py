@@ -21,7 +21,7 @@ def main(jsonObj, answers):
 
     # Make the POST request with your search parameters
     response = requests.post(url, headers=headers, json=jsonObj)
-
+    data = {};
     # Check if the request was successful
     if response.status_code == 200:
         # Process the successful response
