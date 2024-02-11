@@ -1,2 +1,8 @@
 # heloo this is a test
-print("Hello Isaac")
+def main():
+
+    print("Hello Isaac")
+
+    return 1+1;
+
+main()
